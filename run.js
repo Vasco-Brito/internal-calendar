@@ -1,9 +1,10 @@
 const webLoggin = require('./src/web/loggin');
+const inovarCalendar = require('./src/be/inovarCalendar');
 
 async function main() {
   try {
     const token = await webLoggin.executar();
-    console.log('Token:', token);
+    inovarCalendar.getCalendar(token);
   } catch (error) {
     console.error('Erro:', error);
   }
