@@ -1,6 +1,6 @@
 # Nosso Calendario
 
-Breve descrição do projeto e seu propósito.
+O nome diz tudo não? =)
 
 ## Recursos
 
