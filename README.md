@@ -12,8 +12,20 @@ O nome diz tudo não? =)
 ## Instalação
 
 Para instalar é super simples, basta fazer o clone do projeto
-    - npm i
-    - node .\run.js
+-     npm i
+-     node .\run.js
+
+Para a parte de SQL:
+    Tabelas:
+-        CREATE TABLE events (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            description VARCHAR(255) NOT NULL,
+            start DATETIME NOT NULL,
+            end DATETIME NOT NULL,
+            author VARCHAR(255) DEFAULT 'AUTOMATIC',
+            color VARCHAR(255) DEFAULT 'lightblue'
+        );
 
 ## Uso
 
