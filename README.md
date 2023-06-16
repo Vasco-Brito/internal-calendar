@@ -12,8 +12,8 @@ O nome diz tudo não? =)
 ## Instalação
 
 Para instalar é super simples, basta fazer o clone do projeto
--    - npm i
--    - node .\run.js
+-     npm i
+-     node .\run.js
 
 Para a parte de SQL:
     Tabelas:
