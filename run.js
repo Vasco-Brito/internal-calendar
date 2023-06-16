@@ -5,8 +5,8 @@ const server = require('./src/be/server')
 async function main() {
   try {
     server.startServer()
-    //const token = await webLoggin.executar();
-    //inovarCalendar.getCalendar(token);
+    const token = await webLoggin.executar();
+    inovarCalendar.getCalendar(token);
   } catch (error) {
     console.error('Erro:', error);
   }

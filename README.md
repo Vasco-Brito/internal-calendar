@@ -19,10 +19,11 @@ Para a parte de SQL:
     Tabelas:
 -        CREATE TABLE events (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            title VARCHAR(255),
-            start_date DATETIME,
-            end_date DATETIME,
-            author VARCHAR(255) DEFAULT 'automatic',
+            title VARCHAR(255) NOT NULL,
+            description VARCHAR(255) NOT NULL,
+            start DATETIME NOT NULL,
+            end DATETIME NOT NULL,
+            author VARCHAR(255) DEFAULT 'AUTOMATIC',
             color VARCHAR(255) DEFAULT 'lightblue'
         );
 
