@@ -65,6 +65,38 @@ function startServer() {
     });
   });
 
+  app.post('/api/phone/msg', (req, res) => {
+    const events = req.body; // Obtém a matriz de objetos enviada no corpo da solicitação
+    
+    console.log(events)
+
+    // Verifique se a matriz de eventos é uma matriz válida e possui pelo menos um evento
+    if (!Array.isArray(events) || events.length === 0) {
+      res.status(400).json({ error: 'Matriz de eventos inválida' });
+      return;
+    }
+    
+    const query = 'INSERT INTO events (title, description, start, end) VALUES ?';
+    const values = [];
+    
+    // Construa a matriz de valores a serem inseridos na consulta SQL
+    events.forEach(event => {
+      const { title, description, start, end } = event;
+      values.push([title, description, start, end]);
+    });
+    
+    // Insira os dados dos eventos na tabela "events"
+    db.query(query, [values], (err, result) => {
+      if (err) {
+        console.error('Erro ao inserir os eventos na tabela:', err);
+        res.status(500).json({ error: 'Erro ao inserir os eventos' });
+        return;
+      }
+    
+      res.json({ message: 'Eventos adicionados com sucesso' });
+    });
+  });
+
   // Iniciar o servidor
   const port = 3000;
   server.listen(port, () => {
