@@ -1,14 +1,15 @@
 const puppeteer = require('puppeteer');
-const axios = require('axios');
 require('dotenv').config();
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+var page;
+
 async function getToken() {
   const browser = await puppeteer.launch({ headless: false });
-  const page = await browser.newPage();
+  page = await browser.newPage();
   let resolveToken;
 
   const tokenPromise = new Promise(resolve => {
@@ -41,54 +42,18 @@ async function getToken() {
 
   await page.click('[data-value="OneWaySMS"]');
 
-  // Esperar a resposta da API antes de continuar
-  const verificationCode = await waitForAPIResponse(page);
+  return 'asd';
+}
+
+async function applyCode(accessCode) {
+  console.log('accessCode ', accessCode)
+
+  await page.click('[id="idTxtBx_SAOTCC_OTC"]');
+  await page.type('[id="idTxtBx_SAOTCC_OTC"]', accessCode);
 
   await page.click('[id="idSubmit_SAOTCC_Continue"]');
 
-  return { token: await tokenPromise, verificationCode };
-}
-
-async function waitForAPIResponse(page) {
-  const apiURL = 'http://localhost:3000/api/phone/msg'; // URL da API
-  const timeout = 10000; // Tempo limite de espera em milissegundos
-  const pollingInterval = 1000; // Intervalo de tempo entre as tentativas em milissegundos
-
-  let startTime = Date.now();
-
-  while (Date.now() - startTime < timeout) {
-    try {
-      const response = await axios.get(apiURL);
-      const data = response.data;
-
-      // Verificar se a resposta da API contém o valor esperado
-      if (data && data.msgBody) {
-        const verificationCode = extractVerificationCode(data.msgBody);
-        if (verificationCode) {
-          return verificationCode; // Retorna o código de verificação extraído
-        }
-      }
-    } catch (error) {
-      // Lidar com erros de requisição ou respostas inválidas da API
-      console.error('Erro ao fazer a requisição à API:', error);
-    }
-
-    // Aguardar o intervalo de tempo antes de fazer uma nova tentativa
-    await delay(pollingInterval);
-  }
-
-  throw new Error('Timeout: A resposta da API não foi recebida dentro do tempo limite');
-}
-
-function extractVerificationCode(msgBody) {
-  console.log(msgBody)
-  const regex = /cód\. de verificação (\d+)/i;
-  const match = msgBody.match(regex);
-  if (match && match[1]) {
-    console.log(match[1])
-    return match[1]; // Retorna o código de verificação extraído
-  }
-  return null; // Código de verificação não encontrado
+  await page.click('[id="idSIButton9"]');
 }
 
 function executar() {
@@ -105,5 +70,6 @@ function executar() {
 }
 
 module.exports = {
-  executar
+  executar,
+  applyCode
 };

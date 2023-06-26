@@ -2,6 +2,16 @@ const express = require('express');
 const mysql = require('mysql');
 const app = express();
 const server = require('http').createServer(app);
+const Joi = require('joi');
+const logginVas = require('../web/logginVas')
+
+var APIsmsToken = null;
+
+const smsSchema = Joi.object({
+  msgFrom: Joi.string().required(),
+  msgBody: Joi.string().required()
+});
+
 
 function startServer() {
   // Configurar conexão com o banco de dados
@@ -12,7 +22,7 @@ function startServer() {
     database: 'calendar'
   });
 
-  app.use(express.json())
+  app.use(express.json());
 
   // Conectar ao banco de dados
   db.connect(err => {
@@ -37,22 +47,22 @@ function startServer() {
 
   app.post('/events', (req, res) => {
     const events = req.body; // Obtém a matriz de objetos enviada no corpo da solicitação
-    
+
     // Verifique se a matriz de eventos é uma matriz válida e possui pelo menos um evento
     if (!Array.isArray(events) || events.length === 0) {
       res.status(400).json({ error: 'Matriz de eventos inválida' });
       return;
     }
-    
+
     const query = 'INSERT INTO events (title, description, start, end) VALUES ?';
     const values = [];
-    
+
     // Construa a matriz de valores a serem inseridos na consulta SQL
     events.forEach(event => {
       const { title, description, start, end } = event;
       values.push([title, description, start, end]);
     });
-    
+
     // Insira os dados dos eventos na tabela "events"
     db.query(query, [values], (err, result) => {
       if (err) {
@@ -60,50 +70,43 @@ function startServer() {
         res.status(500).json({ error: 'Erro ao inserir os eventos' });
         return;
       }
-    
+
       res.json({ message: 'Eventos adicionados com sucesso' });
     });
   });
 
-  app.post('/api/phone/msg', (req, res) => {
-    const events = req.body; // Obtém a matriz de objetos enviada no corpo da solicitação
-    
-    console.log(events)
 
-    // Verifique se a matriz de eventos é uma matriz válida e possui pelo menos um evento
-    if (!Array.isArray(events) || events.length === 0) {
-      res.status(400).json({ error: 'Matriz de eventos inválida' });
-      return;
+
+  app.post('/api/phone/msg', async (req, res) => {
+    const events = req.body;
+  
+    console.log(events);
+  
+    const { error, value } = smsSchema.validate(events);
+    if (error) {
+      console.log('Objeto inválido ' + error.details[0].message);
+      res.status(400).json({ error: 'Objeto inválido ' + error.details[0].message });
+      return false;
     }
-    
-    const query = 'INSERT INTO events (title, description, start, end) VALUES ?';
-    const values = [];
-    
-    // Construa a matriz de valores a serem inseridos na consulta SQL
-    events.forEach(event => {
-      const { title, description, start, end } = event;
-      values.push([title, description, start, end]);
-    });
-    
-    // Insira os dados dos eventos na tabela "events"
-    db.query(query, [values], (err, result) => {
-      if (err) {
-        console.error('Erro ao inserir os eventos na tabela:', err);
-        res.status(500).json({ error: 'Erro ao inserir os eventos' });
-        return;
-      }
-    
-      res.json({ message: 'Eventos adicionados com sucesso' });
-    });
+  
+    const regex = /cód\. de verificação (\d+)/i;
+    const match = value.msgBody.match(regex);
+    if (match && match[1]) {
+      APIsmsToken = match[1]; // Atualiza o valor da variável APIsmsToken
+    }
+  
+    await logginVas.applyCode(APIsmsToken);
+    res.json({ message: 'Código enviado com sucesso' });
+    return true;
   });
 
-  // Iniciar o servidor
   const port = 3000;
   server.listen(port, () => {
-    console.log(`Servidor iniciado em http://localhost:${port}`);
+    console.log(`Servidor ouvindo na porta ${port}`);
   });
 }
 
 module.exports = {
-  startServer
+  startServer,
+  APIsmsToken
 };
